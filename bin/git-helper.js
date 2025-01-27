@@ -31,7 +31,7 @@ program
       spinner.text = `Pushing to branch: ${branch}`;
       execSync(`git push origin ${branch}`, { stdio: "inherit" });
 
-      spinner.succeed(chalk.green("✅ Changes pushed successfully!"));
+      spinner.succeed(chalk.green("Changes pushed successfully!"));
     } catch (error) {
       spinner.fail(chalk.red("Oh no, something went wrong while pushing..."));
     }
