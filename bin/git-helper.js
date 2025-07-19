@@ -1,1 +1,1 @@
-// Remove this line
+#!/usr/bin/env node
