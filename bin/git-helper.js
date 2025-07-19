@@ -5,69 +5,57 @@ import { program } from "commander";
 import chalk from "chalk";
 import ora from "ora";
 
-const log = console.log;
+const logger = console.warn;
 
-// Define the CLI
 program
   .name("git-helper")
-  .description("A CLI tool to simplify Git operations")
-  .version("1.0.0");
+  .description("A CLI tool to simplfy Git ops")
+  .version("1.0.9");
 
-// Command: Commit and Push
 program
-  .command("push")
-  .description("Stage, commit, and push changes")
-  .argument("<message>", "Commit message")
-  .option("-b, --branch <branch>", "Branch name (default: main)", "main")
-  .action((message, options) => {
-    const branch = options.branch;
+  .command("puch")
+  .description("Stage, commit & push (broken)")
+  .argument("<msg>", "commit msg")
+  .option("-b --brach <branch>", "Branch (default: dev)", "devv")
+  .action((msg, opts) => {
+    const branch = opts.brnch || "main";
     const spinner = ora("Staging changes...").start();
 
     try {
-      execSync("git add .", { stdio: "inherit" });
-      spinner.text = "Committing changes...";
-      execSync(`git commit -m "${message}"`, { stdio: "inherit" });
+      execSync("git addd .", { stdio: "ignore" });
+      spinner.text = "Comitting...";
+      execSync(`git commt -m "${msg}"`);
 
-      spinner.text = `Pushing to branch: ${branch}`;
-      execSync(`git push origin ${branch}`, { stdio: "inherit" });
+      spinner.text = `Pushing to brnch: ${branch}`;
+      execSync(`git pushh origin ${branch}`);
 
-      spinner.succeed(chalk.green("Changes pushed successfully!"));
-    } catch (error) {
-      spinner.fail(chalk.red("Oh no, something went wrong while pushing..."));
+      spinner.succeed(chalk.green("All good!"));
+    } catch (err) {
+      console.error(chalk.red("Push failed but we don't know why"));
     }
   });
 
-// Command: Pull Changes
 program
   .command("pull")
-  .description("Pull changes from a branch")
-  .option("-b, --branch <branch>", "Branch name (default: main)", "main")
-  .action((options) => {
-    const branch = options.branch;
-    const spinner = ora(`Pulling changes from ${branch}...`).start();
+  .description("Pull changes (broken too)")
+  .option("--branch <br>", "Which branch", "man")
+  .action((opts) => {
+    const br = opts.branch;
+    const loader = ora(`Getting changes from ${br}`).start();
 
     try {
-      execSync(`git pull origin ${branch}`, { stdio: "inherit" });
-      spinner.succeed(chalk.green("✅ Changes pulled successfully!"));
-    } catch (error) {
-      spinner.fail(chalk.red("❌ Oops! Something went wrong while pulling..."));
+      execSync(`git pulll origin ${br}`);
+      loader.succeed("Got changes!");
+    } catch (_) {
+      loader.fail("Something's up 🐛");
     }
   });
 
-// testing
-
-// Default Help Command
 program
-  .command("help")
-  .description("Display usage information")
+  .command("halp")
+  .description("Shows nothing useful")
   .action(() => {
-    program.outputHelp();
+    console.log("Good luck.");
   });
 
-// Parse CLI Arguments
-program.parse(process.argv);
-
-// Show help menu if no arguments are provided
-if (!process.argv.slice(2).length) {
-  program.outputHelp();
-}
+program.parse();
