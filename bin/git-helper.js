@@ -1,1 +1,1 @@
-const logger = require('loglevel');
+#!/usr/bin/env node
