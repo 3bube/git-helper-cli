@@ -4,6 +4,7 @@ import { execSync } from "child_process";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { program } from "commander";
+import os from "os";
 import chalk from "chalk";
 import ora from "ora";
 import Groq from "groq-sdk";
@@ -119,10 +120,7 @@ function getGroqApiKey() {
 
   // Fallback to global config in home directory
   try {
-    const globalConfigPath = resolve(
-      require("os").homedir(),
-      ".git-helper-global.json"
-    );
+    const globalConfigPath = resolve(os.homedir(), ".git-helper-global.json");
     if (existsSync(globalConfigPath)) {
       const globalConfig = JSON.parse(readFileSync(globalConfigPath, "utf8"));
       if (globalConfig.groqApiKey) {
@@ -144,10 +142,7 @@ function getSelectedModel() {
 
   // Try global config
   try {
-    const globalConfigPath = resolve(
-      require("os").homedir(),
-      ".git-helper-global.json"
-    );
+    const globalConfigPath = resolve(os.homedir(), ".git-helper-global.json");
     if (existsSync(globalConfigPath)) {
       const globalConfig = JSON.parse(readFileSync(globalConfigPath, "utf8"));
       if (globalConfig.model && AVAILABLE_MODELS[globalConfig.model]) {
@@ -286,9 +281,10 @@ program
     } else if (options.setGlobalKey) {
       try {
         const globalConfigPath = resolve(
-          require("os").homedir(),
+          os.homedir(),
           ".git-helper-global.json"
         );
+
         const globalConfig = existsSync(globalConfigPath)
           ? JSON.parse(readFileSync(globalConfigPath, "utf8"))
           : {};
