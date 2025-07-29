@@ -28,3 +28,6 @@ Thumbs.db
 # Other files to ignore
 *.tgz
 *.gz
+
+
+.git-helper-config.json
