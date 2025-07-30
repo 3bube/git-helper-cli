@@ -656,34 +656,133 @@ async function generateAICommitMessage(apiKey) {
       messages: [
         {
           role: "system",
-          content: `You are a Git commit message generator. Analyze the provided git diff and file status to create a concise, conventional commit message following this format:
+          content: `You are a Git commit message generator. Your task is to create ONE conventional commit message from the provided git diff and file status.
 
+STRICT OUTPUT FORMAT:
 <type>(<scope>): <description>
 
-Types: feat, fix, docs, style, refactor, test, chore
-Keep it under 50 characters for the first line.
-Focus on WHAT changed and WHY, not HOW.
+RULES:
+1. MANDATORY: Use exactly one of these types:
+   - feat: new feature
+   - fix: bug fix
+   - docs: documentation changes
+   - style: formatting, missing semicolons (no code change)
+   - refactor: code change that neither fixes bug nor adds feature
+   - test: adding/correcting tests
+   - chore: updating build tasks, package manager configs
+   - perf: performance improvements
+   - ci: continuous integration changes
+   - build: build system or external dependencies
 
-Examples:
-- feat(auth): add user login functionality
-- fix(api): resolve null pointer in user service
-- docs(readme): update installation instructions
-- refactor(utils): simplify date formatting logic
+2. SCOPE: Use the main affected component/module/file (optional but recommended)
 
-Be specific but concise.`,
+3. DESCRIPTION: 
+   - Start with lowercase verb (add, fix, update, remove, etc.)
+   - Max 50 characters total for first line
+   - Be specific about WHAT changed
+   - No period at end
+
+4. ANALYSIS PRIORITY:
+   - New files/functions = feat
+   - Bug fixes/error handling = fix
+   - Changed existing functionality = refactor
+   - Documentation only = docs
+   - Tests only = test
+   - Config/build files = chore
+
+EXAMPLES:
+feat(auth): add OAuth2 login system
+fix(api): handle null user in getUserById
+docs(readme): add Docker setup instructions
+refactor(utils): extract validation functions
+test(user): add edge cases for signup
+chore(deps): update React to v18.2.0
+
+OUTPUT: Return ONLY the commit message, nothing else.`,
         },
         {
           role: "user",
-          content: `File status:\n${status}\n\nGit diff:\n${diff.slice(
-            0,
-            4000
-          )}`, // Limit diff size
+          content: `Analyze this git change and generate ONE commit message:
+
+FILE STATUS:
+${status}
+
+GIT DIFF (truncated if needed):
+${diff.slice(0, 8000)}
+
+${
+  diff.length > 8000
+    ? "\n[DIFF TRUNCATED - Original was " + diff.length + " characters]"
+    : ""
+}
+
+Generate the commit message now:`,
         },
       ],
       model: selectedModel,
-      max_tokens: 100,
-      temperature: 0.3,
+      max_tokens: 150,
+      temperature: 0.1,
+      top_p: 0.9,
+      frequency_penalty: 0.1,
+      presence_penalty: 0.1,
+      stop: ["\n\n", "```", "---"],
     });
+
+    // Enhanced response processing for robustness
+    // function extractCommitMessage(response) {
+    //   let message = response.choices[0]?.message?.content?.trim() || "";
+
+    //   // Remove common unwanted prefixes/suffixes
+    //   message = message
+    //     .replace(
+    //       /^(Here's the commit message:|Commit message:|Generated commit message:)/i,
+    //       ""
+    //     )
+    //     .replace(/^```\w*\n?/, "")
+    //     .replace(/\n?```$/, "")
+    //     .replace(/^\*\*.*?\*\*:?\s*/, "")
+    //     .replace(/^[-•]\s*/, "")
+    //     .trim();
+
+    //   // Extract first line if multiple lines
+    //   const firstLine = message.split("\n")[0].trim();
+
+    //   // Validate format and length
+    //   const conventionalRegex =
+    //     /^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)(\([^)]+\))?: .{1,50}$/;
+
+    //   if (conventionalRegex.test(firstLine)) {
+    //     return firstLine;
+    //   }
+
+    //   // Fallback: try to fix common issues
+    //   if (firstLine.length > 0) {
+    //     // Ensure it starts with a valid type
+    //     if (
+    //       !/^(feat|fix|docs|style|refactor|test|chore|perf|ci|build)/.test(
+    //         firstLine
+    //       )
+    //     ) {
+    //       // Try to infer type from content
+    //       if (
+    //         firstLine.toLowerCase().includes("add") ||
+    //         firstLine.toLowerCase().includes("implement")
+    //       ) {
+    //         return `feat: ${firstLine.toLowerCase()}`;
+    //       } else if (
+    //         firstLine.toLowerCase().includes("fix") ||
+    //         firstLine.toLowerCase().includes("resolve")
+    //       ) {
+    //         return `fix: ${firstLine.toLowerCase()}`;
+    //       } else {
+    //         return `chore: ${firstLine.toLowerCase()}`;
+    //       }
+    //     }
+    //     return firstLine.slice(0, 72); // Truncate if too long
+    //   }
+
+    //   return "chore: update files"; // Ultimate fallback
+    // }
 
     const message = chatCompletion.choices[0]?.message?.content?.trim();
     if (!message) {
