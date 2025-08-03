@@ -13,23 +13,70 @@ const log = console.log;
 
 // Configuration management
 const AVAILABLE_MODELS = {
-  "llama-3.3-70b-versatile":
-    "Llama 3.3 70B - Best overall performance (Recommended)",
-  "llama-3.1-70b-instruct": "Llama 3.1 70B - Great for complex tasks",
-  "llama-3.1-8b-instruct": "Llama 3.1 8B - Fast and efficient",
-  "deepseek-r1-distill-llama-70b": "DeepSeek R1 70B - Advanced reasoning",
-  "deepseek-r1-distill-qwen-32b": "DeepSeek R1 32B - Good reasoning, faster",
-  "qwen-2.5-coder-32b": "Qwen Coder 32B - Optimized for code understanding",
-  "qwen-2.5-32b": "Qwen 2.5 32B - Well-rounded performance",
-  "mixtral-8x7b-32768": "Mixtral 8x7B - Good balance of speed/quality",
-  "llama-3.2-90b-text-preview": "Llama 3.2 90B - Large context, preview",
-  "llama-3.2-11b-text-preview": "Llama 3.2 11B - Medium size, preview",
-  "llama-3.2-3b-preview": "Llama 3.2 3B - Lightweight, preview",
-  "llama-3.2-1b-preview": "Llama 3.2 1B - Ultra-fast, preview",
-  "gemma2-9b-it": "Gemma2 9B - Google model",
-  "qwen-qwq-32b": "Qwen QwQ 32B - Question-answering focused",
-  "llama3-70b-8192": "Llama3 70B - Legacy, reliable",
-  "llama3-8b-8192": "Llama3 8B - Legacy, fast",
+  "llama-3.3-70b-versatile": {
+    description: "Llama 3.3 70B - Best overall performance (Recommended)",
+    tokenLimit: 8192,
+  },
+  "llama-3.1-70b-instruct": {
+    description: "Llama 3.1 70B - Great for complex tasks",
+    tokenLimit: 8192,
+  },
+  "llama-3.1-8b-instruct": {
+    description: "Llama 3.1 8B - Fast and efficient",
+    tokenLimit: 4096,
+  },
+  "deepseek-r1-distill-llama-70b": {
+    description: "DeepSeek R1 70B - Advanced reasoning",
+    tokenLimit: 8192,
+  },
+  "deepseek-r1-distill-qwen-32b": {
+    description: "DeepSeek R1 32B - Good reasoning, faster",
+    tokenLimit: 4096,
+  },
+  "qwen-2.5-coder-32b": {
+    description: "Qwen Coder 32B - Optimized for code understanding",
+    tokenLimit: 8192,
+  },
+  "qwen-2.5-32b": {
+    description: "Qwen 2.5 32B - Well-rounded performance",
+    tokenLimit: 8192,
+  },
+  "mixtral-8x7b-32768": {
+    description: "Mixtral 8x7B - Good balance of speed/quality",
+    tokenLimit: 32768,
+  },
+  "llama-3.2-90b-text-preview": {
+    description: "Llama 3.2 90B - Large context, preview",
+    tokenLimit: 16384,
+  },
+  "llama-3.2-11b-text-preview": {
+    description: "Llama 3.2 11B - Medium size, preview",
+    tokenLimit: 8192,
+  },
+  "llama-3.2-3b-preview": {
+    description: "Llama 3.2 3B - Lightweight, preview",
+    tokenLimit: 4096,
+  },
+  "llama-3.2-1b-preview": {
+    description: "Llama 3.2 1B - Ultra-fast, preview",
+    tokenLimit: 2048,
+  },
+  "gemma2-9b-it": {
+    description: "Gemma2 9B - Google model",
+    tokenLimit: 8192,
+  },
+  "qwen-qwq-32b": {
+    description: "Qwen QwQ 32B - Question-answering focused",
+    tokenLimit: 8192,
+  },
+  "llama3-70b-8192": {
+    description: "Llama3 70B - Legacy, reliable",
+    tokenLimit: 8192,
+  },
+  "llama3-8b-8192": {
+    description: "Llama3 8B - Legacy, fast",
+    tokenLimit: 8192,
+  },
 };
 
 const DEFAULT_MODEL = "llama-3.3-70b-versatile";
@@ -137,7 +184,10 @@ function getGroqApiKey() {
 function getSelectedModel() {
   const config = loadConfig();
   if (config.model && AVAILABLE_MODELS[config.model]) {
-    return config.model;
+    return {
+      model: config.model,
+      tokenLimit: AVAILABLE_MODELS[config.model].tokenLimit,
+    };
   }
 
   // Try global config
@@ -146,14 +196,20 @@ function getSelectedModel() {
     if (existsSync(globalConfigPath)) {
       const globalConfig = JSON.parse(readFileSync(globalConfigPath, "utf8"));
       if (globalConfig.model && AVAILABLE_MODELS[globalConfig.model]) {
-        return globalConfig.model;
+        return {
+          model: globalConfig.model,
+          tokenLimit: AVAILABLE_MODELS[globalConfig.model].tokenLimit,
+        };
       }
     }
   } catch {
     // Ignore global config errors
   }
 
-  return DEFAULT_MODEL;
+  return {
+    model: DEFAULT_MODEL,
+    tokenLimit: AVAILABLE_MODELS[DEFAULT_MODEL].tokenLimit,
+  };
 }
 
 // Utility functions
@@ -221,7 +277,7 @@ program
     if (options.listModels) {
       log(chalk.cyan("🤖 Available Free AI Models:"));
       log("");
-      Object.entries(AVAILABLE_MODELS).forEach(([model, description]) => {
+      Object.entries(AVAILABLE_MODELS).forEach(([model, { description }]) => {
         const isDefault = model === DEFAULT_MODEL;
         const prefix = isDefault ? chalk.green("⭐") : "  ";
         log(`${prefix} ${chalk.yellow(model)}`);
@@ -358,9 +414,11 @@ program
           }`
         )
       );
-      log(chalk.green(`   ✅ Using model: ${currentModel}`));
+      log(chalk.green(`   ✅ Using model: ${currentModel.model}`));
       log(
-        chalk.gray(`   Model description: ${AVAILABLE_MODELS[currentModel]}`)
+        chalk.gray(
+          `   Model description: ${AVAILABLE_MODELS[currentModel.model]}`
+        )
       );
     } else if (options.reset) {
       if (existsSync(CONFIG_FILE)) {
@@ -399,6 +457,11 @@ program
       log(chalk.gray("  1. git-helper config --list-models"));
       log(chalk.gray("  2. git-helper config --set-model <model-name>"));
       log(chalk.gray("  3. git-helper config --set-key <your-groq-api-key>"));
+      log(
+        chalk.gray(
+          "  4. git-helper config --set-global-key <your-groq-api-key>"
+        )
+      );
     }
   });
 
@@ -645,7 +708,9 @@ async function generateAICommitMessage(apiKey) {
       }
     }
 
-    const selectedModel = getSelectedModel();
+    const { model: selectedModel, tokenLimit } = getSelectedModel();
+    const maxDiffLength = tokenLimit * 4; // Approx. 4 characters per token
+    const truncatedDiff = diff.slice(0, maxDiffLength);
 
     // Initialize Groq client
     const groq = new Groq({
@@ -708,11 +773,13 @@ FILE STATUS:
 ${status}
 
 GIT DIFF (truncated if needed):
-${diff.slice(0, 8000)}
+${truncatedDiff.slice(0, 8000)}
 
 ${
-  diff.length > 8000
-    ? "\n[DIFF TRUNCATED - Original was " + diff.length + " characters]"
+  truncatedDiff.length > 8000
+    ? "\n[DIFF TRUNCATED - Original was " +
+      truncatedDiff.length +
+      " characters]"
     : ""
 }
 
