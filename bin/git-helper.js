@@ -77,6 +77,15 @@ const AVAILABLE_MODELS = {
     description: "Llama3 8B - Legacy, fast",
     tokenLimit: 8192,
   },
+
+  "gpt-oss-120b": {
+    description: "OpenAI GPT-OSS 120B – open-weight, 128 K context",
+    tokenLimit: 131072,
+  },
+  "gpt-oss-20b": {
+    description: "OpenAI GPT-OSS 20B – lightweight open-weight, 128 K context",
+    tokenLimit: 131072,
+  },
 };
 
 const DEFAULT_MODEL = "llama-3.3-70b-versatile";
