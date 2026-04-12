@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "git-helper-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "main": "./bin/index.ts",
   "bin": {
     "git-helper": "./bin/index.ts"
