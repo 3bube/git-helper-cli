@@ -109,6 +109,7 @@ function PushFlow({
 
         if (options.dryRun && !options.ai) {
           // Manual dry run — just show what would happen
+          //
           setCommitMessage(message ?? "");
           setPhase("dry-run");
           setTimeout(() => exit(), 0);
