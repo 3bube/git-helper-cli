@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "git-helper-cli",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "main": "./dist/index.js",
   "bin": {
     "git-helper": "dist/index.js"
