@@ -1,278 +1,304 @@
-# Git Helper CLI 🚀
+# git-helper-cli
 
-## Overview
+An AI-powered Git workflow CLI built with Ink/React for beautiful terminal UI. Combines everyday Git operations with Groq-powered commit message generation.
 
-Git Helper CLI is an intelligent command-line tool that revolutionizes Git workflows by combining traditional Git operations with AI-powered commit message generation. Using Groq's lightning-fast AI models, it analyzes your code changes and creates professional, conventional commit messages automatically - all while keeping your workflow simple and efficient.
+## Features
 
-## ✨ Key Features
+- **AI commit messages** — generates conventional commit messages from your diff using Groq
+- **Interactive model picker** — browse and select from 10 free Groq models in-terminal
+- **Branch management** — list, create, switch, and delete branches with safety checks
+- **Stash management** — save, pop, list, and apply stashes interactively
+- **Rebase** — rebase with conflict detection, abort, and continue support
+- **Reset** — soft/mixed/hard reset with confirmation and file previews
+- **Cherry-pick** — interactive branch and commit picker
+- **Safe by default** — dangerous operations always confirm before executing
 
-- **🤖 AI-Powered Commit Messages** - Automatically generates conventional commit messages using Groq AI
-- **⚡ Lightning Fast** - Built on Groq's infrastructure for sub-second response times
-- **🎯 Smart Git Operations** - Stage, commit, and push with a single command
-- **🔧 Flexible Configuration** - Project-specific and global settings support
-- **🆓 16 Free AI Models** - Choose from multiple free Groq models optimized for different use cases
-- **🛡️ Secure by Design** - API keys stored locally, never committed to repos
-- **📋 Conventional Commits** - Follows industry-standard commit message format
-- **🌈 Beautiful CLI** - Colorful, intuitive interface with progress indicators
-
-## 🚀 Installation
-
-Install Git Helper CLI globally via npm:
+## Installation
 
 ```bash
 npm install -g git-helper-cli
 ```
 
-## ⚙️ Quick Setup
+## Quick Setup
 
-### 1. Choose Your AI Model
+**1. Add your Groq API key** (free at [console.groq.com](https://console.groq.com))
 
 ```bash
-# See all 16 available free models
-git-helper config --list-models
-
-# Set your preferred model (recommended: llama-3.3-70b-versatile)
-git-helper config --set-model llama-3.3-70b-versatile
+git-helper config --set-key gsk_your_key_here
 ```
 
-### 2. Add Your Groq API Key
+**2. Pick an AI model**
 
 ```bash
-# Get a free API key from https://console.groq.com/
-git-helper config --set-key gsk_your_groq_api_key_here
+git-helper config --model
 ```
 
-### 3. Start Using AI Commits!
+This opens an interactive picker — use arrow keys to browse, Enter to select.
+
+**3. Start using it**
 
 ```bash
-# Stage changes and let AI create the commit message
+git-helper push --ai
+```
+
+---
+
+## Commands
+
+### `status` (default)
+
+Show a rich git status dashboard — branch info, staged/unstaged files, recent commits.
+
+```bash
+git-helper
+git-helper status
+```
+
+---
+
+### `push [message]`
+
+Stage all changes, commit, and push.
+
+```bash
+# AI-generated commit message
 git-helper push --ai
 
-# Or generate a message without committing
+# Manual commit message
+git-helper push "feat(auth): add OAuth integration"
+
+# Target a specific branch
+git-helper push --ai --branch feature/my-branch
+
+# Preview without executing
+git-helper push --ai --dry-run
+```
+
+---
+
+### `commit-msg`
+
+Preview an AI-generated commit message without committing anything.
+
+```bash
 git-helper commit-msg
 ```
 
-## 📖 Usage Guide
+---
 
-### AI-Powered Push
+### `pull`
 
-Let AI analyze your changes and create the perfect commit message:
-
-```bash
-git-helper push --ai
-git-helper push --ai --branch feature/new-feature
-```
-
-### Manual Push
-
-Traditional push with your own message:
-
-```bash
-git-helper push "feat(auth): add OAuth integration"
-git-helper push "fix: resolve memory leak" --branch bugfix/memory
-```
-
-### Pull Changes
+Pull latest changes from the remote.
 
 ```bash
 git-helper pull
 git-helper pull --branch main
 ```
 
-### Generate AI Commit Messages
+---
 
-Preview AI-generated messages without committing:
+### `branch <subcommand> [name]`
+
+Manage branches.
 
 ```bash
-git-helper commit-msg
+# List all branches
+git-helper branch list
+
+# Create a new branch
+git-helper branch create my-feature
+
+# Create and immediately switch
+git-helper branch create my-feature --switch
+
+# Switch branches (interactive picker if name omitted)
+git-helper branch switch
+git-helper branch switch main
+
+# Delete a branch
+git-helper branch delete old-branch           # only if merged
+git-helper branch delete old-branch --force   # force delete unmerged
+git-helper branch delete old-branch --yes     # skip confirmation
 ```
 
-### Advanced Options
+---
+
+### `stash <subcommand>`
+
+Manage stashes.
 
 ```bash
-# Dry run - see what would happen without executing
-git-helper push --ai --dry-run
+# Stash current changes (includes untracked files)
+git-helper stash save
+git-helper stash save "work in progress"
 
-# Use current branch automatically
-git-helper push "your message"  # auto-detects current branch
+# Apply and remove the top stash
+git-helper stash pop
+
+# List all stashes
+git-helper stash list
+
+# Apply a specific stash by index (keeps it in the list)
+git-helper stash apply 0
+git-helper stash apply 0 --yes   # skip confirmation
 ```
 
-## 🎯 Available AI Models
+---
 
-Choose from 16 free models optimized for different needs:
+### `rebase [target]`
 
-| Model                           | Best For                 | Speed      |
-| ------------------------------- | ------------------------ | ---------- |
-| `llama-3.3-70b-versatile` ⭐    | Overall best performance | Fast       |
-| `qwen-2.5-coder-32b`            | Code understanding       | Fast       |
-| `deepseek-r1-distill-llama-70b` | Complex reasoning        | Medium     |
-| `llama-3.1-8b-instruct`         | Speed & efficiency       | Ultra-fast |
-| `mixtral-8x7b-32768`            | Large context            | Medium     |
-
-_⭐ = Recommended default_
-
-## ⚙️ Configuration Management
-
-### Project-Specific Settings
+Rebase the current branch.
 
 ```bash
-# Set API key for current project only
+# Rebase onto upstream (e.g. origin/main)
+git-helper rebase
+
+# Rebase onto a specific target
+git-helper rebase origin/main
+
+# Skip confirmation
+git-helper rebase origin/main --yes
+
+# Continue or abort an in-progress rebase
+git-helper rebase --continue
+git-helper rebase --abort
+```
+
+Conflicts are detected automatically — the tool shows which files need resolution and tells you what to run next.
+
+---
+
+### `reset [ref]`
+
+Reset HEAD to a commit reference.
+
+```bash
+# Uncommit last commit, keep changes staged
+git-helper reset --soft
+
+# Uncommit last commit, keep changes unstaged (default)
+git-helper reset
+
+# Discard all changes permanently (always confirms, --yes has no effect)
+git-helper reset --hard
+
+# Reset to a specific ref
+git-helper reset HEAD~2 --soft
+git-helper reset abc1234
+```
+
+| Mode | Changes | Safe to skip confirm? |
+|---|---|---|
+| `--soft` | Stay staged | Yes (`--yes`) |
+| `--mixed` | Become unstaged | Yes (`--yes`) |
+| `--hard` | Permanently discarded | Never |
+
+---
+
+### `cherry-pick`
+
+Interactively cherry-pick a commit from another branch.
+
+```bash
+# Pick source branch interactively, then pick commit
+git-helper cherry-pick
+
+# Go straight to the commit picker for a branch
+git-helper cherry-pick --from feature/my-branch
+```
+
+Shows the last 20 commits from the source branch with a diff preview before confirming.
+
+---
+
+### `config`
+
+Manage API keys and model selection.
+
+```bash
+# Set project API key (auto-added to .gitignore)
 git-helper config --set-key gsk_your_key
 
-# Set model for current project
-git-helper config --set-model llama-3.1-70b-instruct
-
-# View current configuration
-git-helper config --show
-```
-
-### Global Settings (Fallback)
-
-```bash
-# Set global defaults
+# Set global API key (fallback for all repos)
 git-helper config --set-global-key gsk_your_key
-git-helper config --set-global-model qwen-2.5-coder-32b
 
-# Reset configurations
-git-helper config --reset          # Reset project config
-git-helper config --reset-global   # Reset global config
+# Interactive model picker (project-scoped)
+git-helper config --model
+
+# Interactive model picker (global)
+git-helper config --global-model
+
+# Show current config
+git-helper config --show
+
+# List all available models
+git-helper config --list-models
+
+# Reset configs
+git-helper config --reset          # project config
+git-helper config --reset-global   # global config
 ```
 
-### Priority System
+---
 
-The tool uses this priority order:
+## Available Models
 
-1. **Environment Variable** (`GROQ_API_KEY`)
-2. **Project Config** (`.git-helper-config.json`)
-3. **Global Config** (`~/.git-helper-global.json`)
+All models are free via Groq. Select interactively with `git-helper config --model`.
 
-## 🛡️ Security Features
+| Model | Description | Speed |
+|---|---|---|
+| `llama-3.3-70b-versatile` ⭐ | Best overall | Fast |
+| `llama-3.1-8b-instant` | Ultra-fast, lightweight | Ultra-fast |
+| `meta-llama/llama-4-scout-17b-16e-instruct` | Latest Meta Llama 4 | Fast |
+| `moonshotai/kimi-k2-instruct` | 131k context window | Medium |
+| `moonshotai/kimi-k2-instruct-0905` | 262k context window | Medium |
+| `openai/gpt-oss-20b` | OpenAI OSS 20B | Fast |
+| `openai/gpt-oss-120b` | Most capable | Medium |
+| `groq/compound-mini` | Groq Compound Mini | Fast |
+| `groq/compound` | Groq Compound | Medium |
+| `qwen/qwen3-32b` | Qwen 3 32B | Medium |
 
-- **Local Storage**: API keys stored locally, never transmitted except to Groq
-- **Auto .gitignore**: Config files automatically added to .gitignore
-- **Input Sanitization**: Prevents command injection attacks
-- **Validation**: Checks for git repos and staged changes
+_⭐ Default_
 
-## 💡 Examples
+---
 
-### Typical Workflow
+## Configuration Priority
 
-```bash
-# 1. Make your code changes
-vim src/auth.js
+1. `GROQ_API_KEY` environment variable
+2. Project config (`.git-helper-config.json` in current directory)
+3. Global config (`~/.git-helper-global.json`)
 
-# 2. Let AI create the perfect commit message and push
-git-helper push --ai
+Project config is automatically added to `.gitignore` when you set a key with `--set-key`.
 
-# Output:
-# ✅ AI generated message: "feat(auth): add JWT token validation"
-# ✅ Changes pushed successfully!
-```
+---
 
-### Team Collaboration
-
-```bash
-# Each team member sets their own API key
-git-helper config --set-key gsk_alice_key    # Alice's key
-git-helper config --set-key gsk_bob_key      # Bob's key
-
-# Config file is gitignored automatically
-# Everyone uses the same model settings
-git-helper config --set-model qwen-2.5-coder-32b
-```
-
-### Different Models for Different Projects
-
-```bash
-# Use code-optimized model for backend
-cd backend-api/
-git-helper config --set-model qwen-2.5-coder-32b
-
-# Use general model for documentation
-cd docs/
-git-helper config --set-model llama-3.3-70b-versatile
-```
-
-## 🔧 Advanced Features
-
-### Dry Run Mode
-
-See what would happen without executing:
-
-```bash
-git-helper push --ai --dry-run
-
-# Output:
-# Dry run - would execute:
-#   git add .
-#   git commit -m "feat(api): add user authentication"
-#   git push origin main
-```
-
-### Smart Branch Detection
-
-Automatically uses your current branch:
-
-```bash
-git checkout feature/user-auth
-git-helper push --ai  # Automatically pushes to feature/user-auth
-```
-
-### Validation & Safety
-
-- Checks if you're in a git repository
-- Verifies staged changes exist
-- Validates API keys and models
-- Sanitizes commit messages
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**
-4. **Test thoroughly**
-5. **Use the tool to commit**: `git-helper push --ai` 😉
-6. **Submit a pull request**
-
-### Development Setup
+## Development
 
 ```bash
 git clone https://github.com/your-username/git-helper-cli
 cd git-helper-cli
 npm install
-npm link  # Test locally
+npm run build
+npm link
 ```
 
-## 📊 Why Git Helper CLI?
-
-| Traditional Git              | Git Helper CLI              |
-| ---------------------------- | --------------------------- |
-| `git add .`                  | ✅ Automated                |
-| Think of commit message      | 🤖 AI generates it          |
-| `git commit -m "message"`    | ✅ Automated                |
-| `git push origin branch`     | ✅ Automated                |
-| Remember conventional format | 📋 Always follows standards |
-| Context switching to think   | ⚡ Instant, context-aware   |
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Groq** for providing lightning-fast AI inference
-- **Commander.js** for excellent CLI framework
-- **Chalk** for beautiful terminal colors
-- The open-source community for inspiration
+```bash
+# Run without building
+npm start -- push --ai
+npm start -- branch list
+```
 
 ---
 
-## Keywords
+## Tech Stack
 
-`git` `ai` `cli` `groq` `commit-messages` `conventional-commits` `developer-tools` `automation` `git-helper` `command-line` `productivity` `llama` `ai-powered` `git-workflow`
+- [Ink](https://github.com/vadimdemedes/ink) — React for terminal UIs
+- [Commander.js](https://github.com/tj/commander.js) — CLI argument parsing
+- [Groq SDK](https://github.com/groq/groq-typescript) — AI model inference
+- [TypeScript](https://www.typescriptlang.org/) — strict mode, ESM, NodeNext
 
 ---
 
-**Made with ❤️ for developers who value their time**
+## License
+
+MIT
