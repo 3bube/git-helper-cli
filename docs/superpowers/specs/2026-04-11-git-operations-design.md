@@ -229,6 +229,49 @@ export function getLogFrom(branch: string, count: number): GitLog[]
 
 ---
 
+## Nerd Font Icon Map
+
+All new commands use Nerd Font glyphs for icons. These are Private Use Area Unicode characters — they render correctly when the user has a Nerd Font installed (e.g. JetBrainsMono Nerd Font, FiraCode Nerd Font). The existing `` branch glyph (`\uE0A0`) already relies on this, so this is consistent with the current codebase.
+
+Icon assignments:
+
+| Context | Glyph | Code point | Usage |
+|---|---|---|---|
+| Branch (general) | `` | `\uE0A0` | Branch line, branch list header |
+| Create branch | `` | `\uF0FE` | `branch create` success |
+| Switch branch | `` | `\uF0EC` | `branch switch` spinner / success |
+| Delete branch | `` | `\uF1F8` | `branch delete` confirmation |
+| Stash | `` | `\uF187` | `stash` command headers |
+| Rebase | `` | `\uF1B8` | `rebase` spinner / confirmation |
+| Reset / Undo | `` | `\uF0E2` | `reset` confirmation |
+| Cherry-pick | `` | `\uF0E6` | `cherry-pick` picker header |
+| Success | `` | `\uF00C` | All success states (replaces `✓`) |
+| Warning | `` | `\uF071` | All warning panels |
+| Error | `` | `\uF057` | All error panels |
+| Confirm prompt | `` | `\uF059` | `ConfirmPrompt` label |
+
+These are defined as a shared constant object in a new `bin/components/icons.ts` file so every component imports from one place — changing a glyph means changing it in one location.
+
+```typescript
+// bin/components/icons.ts
+export const icon = {
+  branch:       "\uE0A0",
+  branchCreate: "\uF0FE",
+  branchSwitch: "\uF0EC",
+  branchDelete: "\uF1F8",
+  stash:        "\uF187",
+  rebase:       "\uF1B8",
+  reset:        "\uF0E2",
+  cherryPick:   "\uF0E6",
+  success:      "\uF00C",
+  warning:      "\uF071",
+  error:        "\uF057",
+  confirm:      "\uF059",
+} as const;
+```
+
+---
+
 ## New Ink Components
 
 ### `SelectList.tsx`
