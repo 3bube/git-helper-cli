@@ -12,7 +12,29 @@ export type Phase =
   | "streaming"
   | "done"
   | "error"
-  | "warning";
+  | "warning"
+  | "checking"
+  | "resetting"
+  | "confirm"
+  | "confirm-abort"
+  | "rebasing"
+  | "done"
+  | "conflict"
+  | "error"
+  | "warning"
+  | "staging"
+  | "generating-ai"
+  | "streaming"
+  | "committing"
+  | "pushing"
+  | "done"
+  | "error"
+  | "dry-run"
+  | "no-message"
+  | "no-api-key"
+  | "nothing-to-commit";
+
+export type Mode = "soft" | "mixed" | "hard";
 
 export interface Config {
   apiKey: string;
@@ -52,4 +74,40 @@ export interface GitLog {
   author: string;
   date: string;
   message: string;
+}
+
+export interface Branch {
+  name: string;
+  current: boolean;
+  upstream: string | null;
+  merged: boolean;
+}
+
+export interface StashEntry {
+  index: number;
+  message: string;
+  date: string;
+}
+
+export interface RebaseOptions {
+  abort?: boolean;
+  continue?: boolean;
+  yes?: boolean;
+}
+
+export interface PushOptions {
+  ai: boolean;
+  branch?: string | undefined;
+  dryRun: boolean;
+  message?: string | undefined;
+}
+
+export interface ResetOptions {
+  soft?: boolean;
+  hard?: boolean;
+  yes?: boolean;
+}
+
+export interface StashOptions {
+  yes?: boolean;
 }

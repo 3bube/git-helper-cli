@@ -1,5 +1,6 @@
 import path from "path";
 import os from "os";
+import { Phase } from "../types/index.js";
 
 export const AVAILABLE_MODELS: Array<{
   id: string;
@@ -64,3 +65,10 @@ export const GLOBAL_CONFIG_FILE = path.join(
   os.homedir(),
   ".git-helper-global.json",
 );
+
+export const PHASE_LABEL: Partial<Record<Phase, string>> = {
+  staging: "Staging changes…",
+  "generating-ai": "",
+  committing: "Committing…",
+  pushing: "",
+};

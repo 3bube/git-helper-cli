@@ -6,6 +6,11 @@ import { runPushCommand } from "./commands/push.js";
 import { runPullCommand } from "./commands/pull.js";
 import { runCommitMsgCommand } from "./commands/commit-msg.js";
 import { runConfigCommand } from "./commands/config.js";
+import { runBranchCommand } from "./commands/branch.js";
+import { runStashCommand } from "./commands/stash.js";
+import { runRebaseCommand } from "./commands/rebase.js";
+import { runResetCommand } from "./commands/reset.js";
+import { runCherryPickCommand } from "./commands/cherry-pick.js";
 import { hasGitInstalled } from "./git.js";
 import { box, c } from "./ui.js";
 
@@ -121,6 +126,57 @@ program
       await runConfigCommand(options);
     },
   );
+
+program
+  .command("branch <subcommand> [name]")
+  .description("Manage branches (list, create, switch, delete)")
+  .option("--switch", "auto-switch after create")
+  .option("--force", "force delete unmerged branch")
+  .option("--yes", "skip confirmations")
+  .action(async (subcommand: string, name: string | undefined, options: { switch?: boolean; force?: boolean; yes?: boolean }) => {
+    printBanner();
+    await runBranchCommand(subcommand, name, options);
+  });
+
+program
+  .command("stash <subcommand> [arg]")
+  .description("Manage stashes (save, pop, list, apply)")
+  .option("--yes", "skip confirmations")
+  .action(async (subcommand: string, arg: string | undefined, options: { yes?: boolean }) => {
+    printBanner();
+    await runStashCommand(subcommand, arg, options);
+  });
+
+program
+  .command("rebase [target]")
+  .description("Rebase current branch onto target")
+  .option("--abort", "abort in-progress rebase")
+  .option("--continue", "continue in-progress rebase")
+  .option("--yes", "skip confirmation")
+  .action(async (target: string | undefined, options: { abort?: boolean; continue?: boolean; yes?: boolean }) => {
+    printBanner();
+    await runRebaseCommand(target, options);
+  });
+
+program
+  .command("reset [ref]")
+  .description("Reset HEAD to a ref (default: HEAD, mode: mixed)")
+  .option("--soft", "keep changes staged")
+  .option("--hard", "discard all changes (always confirms)")
+  .option("--yes", "skip confirmation (ignored for --hard)")
+  .action(async (ref: string | undefined, options: { soft?: boolean; hard?: boolean; yes?: boolean }) => {
+    printBanner();
+    await runResetCommand(ref, options);
+  });
+
+program
+  .command("cherry-pick")
+  .description("Interactively cherry-pick a commit from another branch")
+  .option("--from <branch>", "source branch to pick from")
+  .action(async (options: { from?: string }) => {
+    printBanner();
+    await runCherryPickCommand(options);
+  });
 
 // ── Default action (no command = status dashboard) ────────────────────────────
 program.action(async () => {

@@ -12,37 +12,8 @@ import { loadConfig, generateCommitMessage } from "../utils/index.js";
 import { Panel } from "../components/Panel.js";
 import { SpinnerLine } from "../components/SpinnerLine.js";
 import { StreamText } from "../components/StreamText.js";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-export interface PushOptions {
-  ai: boolean;
-  branch?: string | undefined;
-  dryRun: boolean;
-  message?: string | undefined;
-}
-
-type Phase =
-  | "staging"
-  | "generating-ai"
-  | "streaming"
-  | "committing"
-  | "pushing"
-  | "done"
-  | "error"
-  | "dry-run"
-  | "no-message"
-  | "no-api-key"
-  | "nothing-to-commit";
-
-const PHASE_LABEL: Partial<Record<Phase, string>> = {
-  staging: "Staging changes…",
-  "generating-ai": "",
-  committing: "Committing…",
-  pushing: "",
-};
-
-// ── Component ─────────────────────────────────────────────────────────────────
+import { PushOptions, Phase } from "../types/index.js";
+import { PHASE_LABEL } from "../constants/index.js";
 
 interface PushFlowProps {
   message: string | undefined;

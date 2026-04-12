@@ -7,8 +7,6 @@ import { runConfigSync, setProjectValue, setGlobalValue } from "../config.js";
 import { Panel } from "../components/Panel.js";
 import type { ConfigOptions, Config } from "../types/index.js";
 
-// ── Model picker component ────────────────────────────────────────────────────
-
 type PickerPhase = "selecting" | "done" | "error";
 
 interface ModelPickerFlowProps {
@@ -64,9 +62,7 @@ function ModelPickerFlow({
   }
 
   if (phase === "error") {
-    return (
-      <Panel variant="error" title="Failed to save model" lines={[]} />
-    );
+    return <Panel variant="error" title="Failed to save model" lines={[]} />;
   }
 
   return (
@@ -79,7 +75,9 @@ function ModelPickerFlow({
       </InkBox>
       <Select options={options} onChange={handleSelect} />
       <InkBox marginTop={1}>
-        <Text color="#6B7280">{"  ↑ ↓ navigate   Enter select   Esc cancel"}</Text>
+        <Text color="#6B7280">
+          {"  ↑ ↓ navigate   Enter select   Esc cancel"}
+        </Text>
       </InkBox>
     </InkBox>
   );
