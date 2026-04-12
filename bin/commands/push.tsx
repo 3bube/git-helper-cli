@@ -100,6 +100,7 @@ function PushFlow({
     void (async () => {
       try {
         // Validate inputs first
+        //
         if (!options.ai && !message) {
           setPhase("no-message");
           onError();
