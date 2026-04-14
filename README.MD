@@ -38,6 +38,7 @@ This opens an interactive picker — use arrow keys to browse, Enter to select.
 **3. Start using it**
 
 ```bash
+git-helper commit-msg
 git-helper push --ai
 ```
 
@@ -187,11 +188,11 @@ git-helper reset HEAD~2 --soft
 git-helper reset abc1234
 ```
 
-| Mode | Changes | Safe to skip confirm? |
-|---|---|---|
-| `--soft` | Stay staged | Yes (`--yes`) |
-| `--mixed` | Become unstaged | Yes (`--yes`) |
-| `--hard` | Permanently discarded | Never |
+| Mode      | Changes               | Safe to skip confirm? |
+| --------- | --------------------- | --------------------- |
+| `--soft`  | Stay staged           | Yes (`--yes`)         |
+| `--mixed` | Become unstaged       | Yes (`--yes`)         |
+| `--hard`  | Permanently discarded | Never                 |
 
 ---
 
@@ -245,18 +246,18 @@ git-helper config --reset-global   # global config
 
 All models are free via Groq. Select interactively with `git-helper config --model`.
 
-| Model | Description | Speed |
-|---|---|---|
-| `llama-3.3-70b-versatile` ⭐ | Best overall | Fast |
-| `llama-3.1-8b-instant` | Ultra-fast, lightweight | Ultra-fast |
-| `meta-llama/llama-4-scout-17b-16e-instruct` | Latest Meta Llama 4 | Fast |
-| `moonshotai/kimi-k2-instruct` | 131k context window | Medium |
-| `moonshotai/kimi-k2-instruct-0905` | 262k context window | Medium |
-| `openai/gpt-oss-20b` | OpenAI OSS 20B | Fast |
-| `openai/gpt-oss-120b` | Most capable | Medium |
-| `groq/compound-mini` | Groq Compound Mini | Fast |
-| `groq/compound` | Groq Compound | Medium |
-| `qwen/qwen3-32b` | Qwen 3 32B | Medium |
+| Model                                       | Description             | Speed      |
+| ------------------------------------------- | ----------------------- | ---------- |
+| `llama-3.3-70b-versatile` ⭐                | Best overall            | Fast       |
+| `llama-3.1-8b-instant`                      | Ultra-fast, lightweight | Ultra-fast |
+| `meta-llama/llama-4-scout-17b-16e-instruct` | Latest Meta Llama 4     | Fast       |
+| `moonshotai/kimi-k2-instruct`               | 131k context window     | Medium     |
+| `moonshotai/kimi-k2-instruct-0905`          | 262k context window     | Medium     |
+| `openai/gpt-oss-20b`                        | OpenAI OSS 20B          | Fast       |
+| `openai/gpt-oss-120b`                       | Most capable            | Medium     |
+| `groq/compound-mini`                        | Groq Compound Mini      | Fast       |
+| `groq/compound`                             | Groq Compound           | Medium     |
+| `qwen/qwen3-32b`                            | Qwen 3 32B              | Medium     |
 
 _⭐ Default_
 

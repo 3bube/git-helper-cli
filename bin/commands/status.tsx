@@ -109,6 +109,10 @@ function StatusDashboard({
             right={"commit & push with AI message"}
           />
           <HintLine
+            left={"  git-helper commit-msg      "}
+            right={"preview an AI commit message"}
+          />
+          <HintLine
             left={'  git-helper push "<msg>"    '}
             right={"commit & push with your message"}
           />
