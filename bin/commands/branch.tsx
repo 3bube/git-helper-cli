@@ -71,6 +71,10 @@ function BranchCreateFlow({
   const [switched, setSwitched] = React.useState(false);
 
   React.useEffect(() => {
+    if (phase === "done" || phase === "error") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
     try {
       createBranch(name);
 
@@ -78,10 +82,8 @@ function BranchCreateFlow({
         switchBranch(name);
         setSwitched(true);
         setPhase("done");
-        setTimeout(() => exit(), 0);
       } else if (options.yes) {
         setPhase("done");
-        setTimeout(() => exit(), 0);
       } else {
         setPhase("confirm-switch");
       }
@@ -89,7 +91,6 @@ function BranchCreateFlow({
       setErrMsg(err instanceof Error ? err.message : String(err));
       setPhase("error");
       onError();
-      setTimeout(() => exit(), 0);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -134,7 +135,7 @@ function BranchCreateFlow({
 
 // ── branch switch ─────────────────────────────────────────────────────────────
 
-type SwitchPhase = "loading" | "selecting" | "confirm-dirty" | "done" | "error";
+type SwitchPhase = "loading" | "selecting" | "confirm-dirty" | "done" | "error" | "already-on" | "no-others";
 
 function BranchSwitchFlow({
   name,
@@ -162,25 +163,52 @@ function BranchSwitchFlow({
         setPhase("error");
         onError();
       }
-      setTimeout(() => exit(), 0);
     },
-    [exit, onError],
+    [onError],
   );
 
   React.useEffect(() => {
+    if (phase === "already-on" || phase === "no-others" || phase === "done" || phase === "error") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
+    const all = getBranches();
+    const current = all.find((b) => b.current);
+
     if (name) {
+      if (name === current?.name) {
+        setPhase("already-on");
+        return;
+      }
       const dirty = hasUncommittedChanges();
       if (dirty && !options.yes) {
+        targetRef.current = name;
         setPhase("confirm-dirty");
       } else {
         doSwitch(name);
       }
     } else {
-      const all = getBranches().filter((b) => !b.current);
-      setBranchItems(all.map((b) => ({ label: b.name, value: b.name })));
+      const others = all.filter((b) => !b.current);
+      if (others.length === 0) {
+        setPhase("no-others");
+        return;
+      }
+      setBranchItems(others.map((b) => ({ label: b.name, value: b.name })));
       setPhase("selecting");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (phase === "already-on") {
+    return (
+      <Panel variant="info" title="Already on branch" lines={[`You are already on "${name ?? ""}".`]} />
+    );
+  }
+
+  if (phase === "no-others") {
+    return (
+      <Panel variant="info" title="No other branches" lines={["Create a branch first:", "  git-helper branch create <name>"]} />
+    );
+  }
 
   if (phase === "error") {
     return <Panel variant="error" title="Switch failed" lines={[errMsg ?? "Unknown error"]} />;
@@ -235,7 +263,7 @@ function BranchSwitchFlow({
 
 // ── branch delete ─────────────────────────────────────────────────────────────
 
-type DeletePhase = "checking" | "confirm" | "done" | "error" | "blocked";
+type DeletePhase = "checking" | "confirm" | "done" | "error" | "blocked" | "is-current";
 
 function BranchDeleteFlow({
   name,
@@ -260,16 +288,25 @@ function BranchDeleteFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
-  }, [exit, name, onError, options.force]);
+  }, [name, onError, options.force]);
 
   React.useEffect(() => {
+    if (phase === "is-current" || phase === "blocked" || phase === "done" || phase === "error") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
+    const branches = getBranches();
+    const currentBranch = branches.find((b) => b.current);
+    if (currentBranch?.name === name) {
+      setPhase("is-current");
+      return;
+    }
+
     const isMerged = isBranchMerged(name);
     setMerged(isMerged);
 
     if (!isMerged && !options.force) {
       setPhase("blocked");
-      setTimeout(() => exit(), 0);
       return;
     }
 
@@ -280,6 +317,16 @@ function BranchDeleteFlow({
 
     setPhase("confirm");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (phase === "is-current") {
+    return (
+      <Panel
+        variant="warning"
+        title="Cannot delete current branch"
+        lines={[`"${name}" is your current branch.`, "Switch to another branch first."]}
+      />
+    );
+  }
 
   if (phase === "blocked") {
     return (

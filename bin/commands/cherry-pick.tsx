@@ -1,6 +1,6 @@
 import React from "react";
 import { render, useApp, Box as InkBox, Text } from "ink";
-import { getBranches, getLogFrom, cherryPick, getCurrentBranch } from "../git.js";
+import { getBranches, getLogFrom, cherryPick, getCurrentBranch, hasUncommittedChanges } from "../git.js";
 import { Panel } from "../components/Panel.js";
 import { SpinnerLine } from "../components/SpinnerLine.js";
 import { SelectList } from "../components/SelectList.js";
@@ -17,13 +17,16 @@ export interface CherryPickOptions {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 type Phase =
+  | "checking"
   | "select-branch"
   | "select-commit"
   | "confirm"
   | "picking"
   | "done"
   | "conflict"
-  | "error";
+  | "error"
+  | "dirty"
+  | "no-commits";
 
 function CherryPickFlow({
   from,
@@ -33,7 +36,7 @@ function CherryPickFlow({
   onError: () => void;
 }): React.JSX.Element {
   const { exit } = useApp();
-  const [phase, setPhase] = React.useState<Phase>(from ? "select-commit" : "select-branch");
+  const [phase, setPhase] = React.useState<Phase>("checking");
   const [errMsg, setErrMsg] = React.useState<string | null>(null);
   const [conflicts, setConflicts] = React.useState<string[]>([]);
   const [branchItems, setBranchItems] = React.useState<Array<{ label: string; value: string }>>([]);
@@ -58,11 +61,14 @@ function CherryPickFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
-  }, [exit, onError]);
+  }, [onError]);
 
   const loadCommits = React.useCallback((branch: string) => {
     const logs = getLogFrom(branch, 20);
+    if (logs.length === 0) {
+      setPhase("no-commits");
+      return;
+    }
     const map = new Map<string, GitLog>();
     const items = logs.map((l) => {
       map.set(l.shortHash, l);
@@ -75,14 +81,47 @@ function CherryPickFlow({
   }, []);
 
   React.useEffect(() => {
+    if (phase === "dirty" || phase === "done" || phase === "conflict" || phase === "error" || phase === "no-commits") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
+    if (hasUncommittedChanges()) {
+      setPhase("dirty");
+      return;
+    }
+
     if (from) {
       loadCommits(from);
     } else {
       const current = getCurrentBranch();
       const others = getBranches().filter((b) => !b.current && b.name !== current);
       setBranchItems(others.map((b) => ({ label: b.name, value: b.name })));
+      setPhase("select-branch");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (phase === "dirty") {
+    return (
+      <Panel
+        variant="warning"
+        title="Uncommitted changes"
+        lines={[
+          "Stash or commit your changes before cherry-picking:",
+          "  git-helper stash save",
+        ]}
+      />
+    );
+  }
+
+  if (phase === "no-commits") {
+    return (
+      <Panel
+        variant="info"
+        title="No commits found"
+        lines={[`No commits found in "${from ?? "selected branch"}".`]}
+      />
+    );
+  }
 
   if (phase === "error") {
     return <Panel variant="error" title="Cherry-pick failed" lines={[errMsg ?? "Unknown error"]} />;
@@ -165,7 +204,7 @@ function CherryPickFlow({
     );
   }
 
-  return <SpinnerLine text="Applying commit…" />;
+  return <SpinnerLine text="Checking…" />;
 }
 
 // ── Command ───────────────────────────────────────────────────────────────────

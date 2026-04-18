@@ -21,13 +21,16 @@ function CommitMsgFlow({ onError }: CommitMsgFlowProps): React.JSX.Element {
   const [model, setModel] = React.useState("");
 
   React.useEffect(() => {
+    if (phase === "error" || phase === "warning" || phase === "done") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
     void (async () => {
       try {
         if (!isGitRepo()) {
           setErrMsg("Not a git repository");
           setPhase("error");
           onError();
-          setTimeout(() => exit(), 0);
           return;
         }
 
@@ -38,7 +41,6 @@ function CommitMsgFlow({ onError }: CommitMsgFlowProps): React.JSX.Element {
           setErrMsg("Run: git-helper config --set-key <your-key>");
           setPhase("error");
           onError();
-          setTimeout(() => exit(), 0);
           return;
         }
 
@@ -48,7 +50,6 @@ function CommitMsgFlow({ onError }: CommitMsgFlowProps): React.JSX.Element {
         if (!diff) {
           setWarnMsg("Run git add first to stage your changes.");
           setPhase("warning");
-          setTimeout(() => exit(), 0);
           return;
         }
 
@@ -68,15 +69,13 @@ function CommitMsgFlow({ onError }: CommitMsgFlowProps): React.JSX.Element {
         setErrMsg(err instanceof Error ? err.message : String(err));
         setPhase("error");
         onError();
-        setTimeout(() => exit(), 0);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStreamDone = React.useCallback(() => {
     setPhase("done");
-    setTimeout(() => exit(), 0);
-  }, [exit]);
+  }, []);
 
   if (phase === "error") {
     return (
