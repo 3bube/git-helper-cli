@@ -32,7 +32,9 @@ export type Phase =
   | "dry-run"
   | "no-message"
   | "no-api-key"
-  | "nothing-to-commit";
+  | "nothing-to-commit"
+  | "behind"
+  | "no-remote";
 
 export type Mode = "soft" | "mixed" | "hard";
 

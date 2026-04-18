@@ -1,6 +1,6 @@
 import React from "react";
 import { render, useApp, Box as InkBox, Text } from "ink";
-import { stashSave, stashPop, stashApply, stashList } from "../git.js";
+import { stashSave, stashPop, stashApply, stashList, hasUncommittedChanges } from "../git.js";
 import { Panel } from "../components/Panel.js";
 import { SpinnerLine } from "../components/SpinnerLine.js";
 import { ConfirmPrompt } from "../components/ConfirmPrompt.js";
@@ -15,12 +15,20 @@ function StashSaveFlow({
   onError: () => void;
 }): React.JSX.Element {
   const { exit } = useApp();
-  const [phase, setPhase] = React.useState<"saving" | "done" | "error">(
+  const [phase, setPhase] = React.useState<"saving" | "done" | "error" | "empty">(
     "saving",
   );
   const [errMsg, setErrMsg] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    if (phase === "done" || phase === "error" || phase === "empty") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
+    if (!hasUncommittedChanges()) {
+      setPhase("empty");
+      return;
+    }
     try {
       stashSave(message);
       setPhase("done");
@@ -29,8 +37,11 @@ function StashSaveFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (phase === "empty") {
+    return <Panel variant="info" title="Nothing to stash" lines={["Working tree is clean."]} />;
+  }
 
   if (phase === "error") {
     return (
@@ -68,11 +79,14 @@ function StashPopFlow({ onError }: { onError: () => void }): React.JSX.Element {
   const [conflicts, setConflicts] = React.useState<string[]>([]);
 
   React.useEffect(() => {
+    if (phase === "done" || phase === "conflict" || phase === "empty" || phase === "error") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
     try {
       const list = stashList();
       if (list.length === 0) {
         setPhase("empty");
-        setTimeout(() => exit(), 0);
         return;
       }
       const conflicted = stashPop();
@@ -87,7 +101,6 @@ function StashPopFlow({ onError }: { onError: () => void }): React.JSX.Element {
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === "empty") {
@@ -198,6 +211,12 @@ function StashApplyFlow({
   const entry = entries[index];
 
   const doApply = React.useCallback(() => {
+    if (index >= entries.length) {
+      setErrMsg(`No stash@{${index}} — only ${entries.length} stash(es) exist.`);
+      setPhase("error");
+      onError();
+      return;
+    }
     try {
       setPhase("applying");
       const conflicted = stashApply(index);
@@ -212,8 +231,11 @@ function StashApplyFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
-  }, [exit, index, onError]);
+  }, [index, onError]);
+
+  React.useEffect(() => {
+    if (phase === "done" || phase === "conflict" || phase === "error") exit();
+  }, [phase, exit]);
 
   React.useEffect(() => {
     if (options.yes) doApply();

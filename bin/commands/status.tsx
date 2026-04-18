@@ -1,6 +1,6 @@
 import React from "react";
 import { render, useApp, Box as InkBox, Text } from "ink";
-import { getGitStatus, getRecentLog } from "../git.js";
+import { getGitStatus, getRecentLog, isDetachedHead } from "../git.js";
 import { box } from "../ui.js";
 import { BranchLine } from "../components/BranchLine.js";
 import { StatusBadge } from "../components/StatusBadge.js";
@@ -109,6 +109,10 @@ function StatusDashboard({
             right={"commit & push with AI message"}
           />
           <HintLine
+            left={"  git-helper commit-msg      "}
+            right={"preview an AI commit message"}
+          />
+          <HintLine
             left={'  git-helper push "<msg>"    '}
             right={"commit & push with your message"}
           />
@@ -147,6 +151,10 @@ export async function runStatusCommand(): Promise<void> {
       "error",
     );
     process.exit(1);
+  }
+
+  if (isDetachedHead()) {
+    status.branch = `(HEAD detached at ${status.branch})`;
   }
 
   const log = getRecentLog(5);

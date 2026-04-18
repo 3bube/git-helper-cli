@@ -49,8 +49,11 @@ function RebaseFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
-  }, [exit, onError]);
+  }, [onError]);
+
+  React.useEffect(() => {
+    if (phase === "warning" || phase === "done" || phase === "error" || phase === "conflict") exit();
+  }, [phase, exit]);
 
   React.useEffect(() => {
     // Handle --abort
@@ -58,7 +61,6 @@ function RebaseFlow({
       if (!isRebasing()) {
         setWarnMsg(["No rebase in progress."]);
         setPhase("warning");
-        setTimeout(() => exit(), 0);
         return;
       }
       if (options.yes) {
@@ -70,7 +72,6 @@ function RebaseFlow({
           setPhase("error");
           onError();
         }
-        setTimeout(() => exit(), 0);
         return;
       }
       setPhase("confirm-abort");
@@ -82,7 +83,6 @@ function RebaseFlow({
       if (!isRebasing()) {
         setWarnMsg(["No rebase in progress."]);
         setPhase("warning");
-        setTimeout(() => exit(), 0);
         return;
       }
       if (hasUncommittedChanges()) {
@@ -92,7 +92,6 @@ function RebaseFlow({
           "  git rebase --continue",
         ]);
         setPhase("warning");
-        setTimeout(() => exit(), 0);
         return;
       }
       try {
@@ -103,7 +102,6 @@ function RebaseFlow({
         setPhase("error");
         onError();
       }
-      setTimeout(() => exit(), 0);
       return;
     }
 
@@ -114,21 +112,30 @@ function RebaseFlow({
         "Use --continue to resume or --abort to cancel.",
       ]);
       setPhase("warning");
-      setTimeout(() => exit(), 0);
       return;
     }
 
-    const resolved =
-      target ??
-      (() => {
-        const branch = getCurrentBranch();
-        const upstream = `origin/${branch}`;
-        return upstream;
-      })();
+    if (hasUncommittedChanges()) {
+      setWarnMsg([
+        "You have uncommitted changes.",
+        "Stash or commit them before rebasing:",
+        "  git-helper stash save",
+      ]);
+      setPhase("warning");
+      return;
+    }
+
+    const resolved = target ?? `origin/${getCurrentBranch()}`;
     resolvedTargetRef.current = resolved;
 
     const count = getCommitCount(resolved);
     setCommitCount(count);
+
+    if (count === 0) {
+      setWarnMsg([`Already up to date with "${resolved}".`]);
+      setPhase("warning");
+      return;
+    }
 
     if (options.yes) {
       doRebase();

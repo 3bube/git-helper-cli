@@ -7,6 +7,8 @@ import {
   getCurrentBranch,
   getDiffContent,
   getDiff,
+  hasRemote,
+  isDetachedHead,
 } from "../git.js";
 import { loadConfig, generateCommitMessage } from "../utils/index.js";
 import { Panel } from "../components/Panel.js";
@@ -36,6 +38,11 @@ function PushFlow({
   const [diffStatLines, setDiffStatLines] = React.useState<string[]>([]);
   const [model, setModel] = React.useState("");
 
+  React.useEffect(() => {
+    const terminal = new Set(["no-message", "no-api-key", "nothing-to-commit", "no-remote", "behind", "error", "dry-run", "done"]);
+    if (terminal.has(phase)) exit();
+  }, [phase, exit]);
+
   // After streaming completes, do commit + push
   // Uses a ref so this callback stays stable — changing commitMessage state
   // would otherwise recreate this function, causing StreamText's useEffect
@@ -48,7 +55,6 @@ function PushFlow({
 
         if (options.dryRun) {
           setPhase("dry-run");
-          setTimeout(() => exit(), 0);
           return;
         }
 
@@ -57,34 +63,44 @@ function PushFlow({
         setPhase("pushing");
         push(branch);
         setPhase("done");
-        setTimeout(() => exit(), 0);
       } catch (err) {
-        setErrMsg(err instanceof Error ? err.message : String(err));
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("non-fast-forward") || msg.includes("[rejected]")) {
+          setPhase("behind");
+          return;
+        }
+        setErrMsg(msg);
         setPhase("error");
         onError();
-        setTimeout(() => exit(), 0);
       }
     })();
-  }, [branch, exit, onError, options.dryRun]);
+  }, [branch, onError, options.dryRun]);
 
   React.useEffect(() => {
     void (async () => {
       try {
         // Validate inputs first
-        //
+        if (isDetachedHead()) {
+          setErrMsg("You are in detached HEAD state. Checkout a branch first.");
+          setPhase("error");
+          onError();
+          return;
+        }
+
         if (!options.ai && !message) {
           setPhase("no-message");
           onError();
-          setTimeout(() => exit(), 0);
           return;
         }
 
         if (options.dryRun && !options.ai) {
-          // Manual dry run — just show what would happen
-          //
           setCommitMessage(message ?? "");
           setPhase("dry-run");
-          setTimeout(() => exit(), 0);
+          return;
+        }
+
+        if (!hasRemote("origin")) {
+          setPhase("no-remote");
           return;
         }
 
@@ -99,7 +115,6 @@ function PushFlow({
           if (!config.apiKey) {
             setPhase("no-api-key");
             onError();
-            setTimeout(() => exit(), 0);
             return;
           }
 
@@ -108,7 +123,6 @@ function PushFlow({
 
           if (!diff && !diffStat) {
             setPhase("nothing-to-commit");
-            setTimeout(() => exit(), 0);
             return;
           }
 
@@ -135,13 +149,16 @@ function PushFlow({
           setPhase("pushing");
           push(branch);
           setPhase("done");
-          setTimeout(() => exit(), 0);
         }
       } catch (err) {
-        setErrMsg(err instanceof Error ? err.message : String(err));
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("non-fast-forward") || msg.includes("[rejected]")) {
+          setPhase("behind");
+          return;
+        }
+        setErrMsg(msg);
         setPhase("error");
         onError();
-        setTimeout(() => exit(), 0);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -182,6 +199,41 @@ function PushFlow({
         variant="warning"
         title="Nothing to commit"
         lines={["Stage some changes first with git add"]}
+      />
+    );
+  }
+
+  if (phase === "no-remote") {
+    return (
+      <Panel
+        variant="warning"
+        title="No remote configured"
+        lines={[
+          `Branch "${branch}" has no remote "origin".`,
+          "",
+          "Add a remote and set tracking:",
+          `  git remote add origin <url>`,
+          `  git push -u origin ${branch}`,
+        ]}
+      />
+    );
+  }
+
+  if (phase === "behind") {
+    return (
+      <Panel
+        variant="warning"
+        title="Branch is behind remote"
+        lines={[
+          "Your branch is behind its remote counterpart.",
+          "Pull the latest changes before pushing:",
+          "",
+          "  git-helper pull",
+          `  git-helper push${options.ai ? " --ai" : ` "${options.message ?? ""}"`}`,
+          "",
+          "Or rebase onto the remote:",
+          "  git-helper rebase",
+        ]}
       />
     );
   }

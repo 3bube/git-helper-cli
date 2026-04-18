@@ -1,6 +1,6 @@
 import React from "react";
 import { render, useApp, Text } from "ink";
-import { reset, getAffectedFiles } from "../git.js";
+import { reset, getAffectedFiles, refExists } from "../git.js";
 import { Panel } from "../components/Panel.js";
 import { SpinnerLine } from "../components/SpinnerLine.js";
 import { ConfirmPrompt } from "../components/ConfirmPrompt.js";
@@ -33,10 +33,20 @@ function ResetFlow({
       setPhase("error");
       onError();
     }
-    setTimeout(() => exit(), 0);
-  }, [exit, gitRef, mode, onError]);
+  }, [gitRef, mode, onError]);
 
   React.useEffect(() => {
+    if (phase === "done" || phase === "error") exit();
+  }, [phase, exit]);
+
+  React.useEffect(() => {
+    if (!refExists(gitRef)) {
+      setErrMsg(`Unknown ref: "${gitRef}"`);
+      setPhase("error");
+      onError();
+      return;
+    }
+
     const files = getAffectedFiles(gitRef);
     setAffectedFiles(files);
 

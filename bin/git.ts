@@ -391,6 +391,22 @@ export function getLogFrom(branch: string, count: number): GitLog[] {
     });
 }
 
+// ── Guards & validators ───────────────────────────────────────────────────────
+
+export function isDetachedHead(): boolean {
+  return run("git rev-parse --abbrev-ref HEAD") === "HEAD";
+}
+
+export function hasRemote(name: string): boolean {
+  const remotes = run("git remote") ?? "";
+  return remotes.split("\n").some((r) => r.trim() === name);
+}
+
+export function refExists(ref: string): boolean {
+  const r = spawn(["rev-parse", "--verify", ref]);
+  return r.ok;
+}
+
 // ── Conflict helper ───────────────────────────────────────────────────────────
 
 function getConflictedFiles(): string[] {
