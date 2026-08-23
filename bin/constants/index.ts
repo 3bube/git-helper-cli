@@ -8,54 +8,39 @@ export const AVAILABLE_MODELS: Array<{
   speed: string;
 }> = [
   {
-    id: "llama-3.3-70b-versatile",
-    description: "Best overall",
-    speed: "Fast",
-  },
-  {
-    id: "llama-3.1-8b-instant",
-    description: "Ultra-fast, lightweight",
-    speed: "Ultra-fast",
-  },
-  {
-    id: "meta-llama/llama-4-scout-17b-16e-instruct",
-    description: "Llama 4 Scout — latest Meta",
-    speed: "Fast",
-  },
-  {
-    id: "moonshotai/kimi-k2-instruct",
-    description: "Kimi K2 — 131k context",
-    speed: "Medium",
-  },
-  {
-    id: "moonshotai/kimi-k2-instruct-0905",
-    description: "Kimi K2 v0905 — 262k context",
-    speed: "Medium",
+    id: "openai/gpt-oss-120b",
+    description: "Most capable — reasoning, tools & coding",
+    speed: "Very fast",
   },
   {
     id: "openai/gpt-oss-20b",
-    description: "OpenAI OSS 20B",
-    speed: "Fast",
+    description: "Fast, lightweight reasoning model",
+    speed: "Ultra-fast",
   },
   {
-    id: "openai/gpt-oss-120b",
-    description: "OpenAI OSS 120B — most capable",
-    speed: "Medium",
-  },
-  {
-    id: "groq/compound-mini",
-    description: "Groq Compound Mini",
-    speed: "Fast",
+    id: "qwen/qwen3.6-27b",
+    description: "Qwen 3.6 27B — strong general-purpose model",
+    speed: "Very fast",
   },
   {
     id: "groq/compound",
-    description: "Groq Compound",
-    speed: "Medium",
+    description: "Agentic AI with web search & code execution",
+    speed: "Fast",
   },
   {
-    id: "qwen/qwen3-32b",
-    description: "Qwen 3 32B",
-    speed: "Medium",
+    id: "groq/compound-mini",
+    description: "Lightweight agentic AI with built-in tools",
+    speed: "Fast",
+  },
+  {
+    id: "minimaxai/minimax-m2.7",
+    description: "MiniMax M2.7 — advanced reasoning & coding",
+    speed: "Fast",
+  },
+  {
+    id: "openai/gpt-oss-safeguard-20b",
+    description: "GPT-OSS 20B optimized for safety classification",
+    speed: "Ultra-fast",
   },
 ];
 
