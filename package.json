@@ -40,12 +40,14 @@
     "groq-sdk": "^0.29.0",
     "ink": "^7.0.0",
     "react": "^19.2.5",
+    "update-notifier": "^7.3.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.7",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
+    "@types/update-notifier": "^6.0.8",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
     "babel-jest": "^29.7.0",

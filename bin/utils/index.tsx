@@ -63,7 +63,10 @@ export async function generateCommitMessage(
     });
 
     const raw = response.choices[0]?.message?.content ?? "";
-    return raw.trim().replace(/^["']|["']$/g, "");
+    return raw
+      .replace(/\0/g, "")
+      .trim()
+      .replace(/^["']|["']$/g, "");
   } catch (err) {
     throw err;
   }

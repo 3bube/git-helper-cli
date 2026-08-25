@@ -189,12 +189,9 @@ export function stageAll(): void {
 }
 
 export function commit(message: string): void {
-  // Sanitize: prevent shell injection via the message
-  const safe = message
-    .replace(/"/g, '\\"')
-    .replace(/`/g, "\\`")
-    .replace(/\$/g, "\\$");
-  execSync(`git commit -m "${safe}"`, { stdio: "pipe" });
+  const safe = message.replace(/\0/g, "");
+  const r = spawn(["commit", "-m", safe]);
+  if (!r.ok) throw new Error(r.stderr.trim() || r.stdout.trim() || "Commit failed");
 }
 
 export function push(branch: string): void {

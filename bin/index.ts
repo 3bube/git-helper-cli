@@ -13,6 +13,10 @@ import { runResetCommand } from "./commands/reset.js";
 import { runCherryPickCommand } from "./commands/cherry-pick.js";
 import { hasGitInstalled } from "./git.js";
 import { box, c } from "./ui.js";
+import { checkForUpdates, readPkg } from "./updateNotifier.js";
+
+const pkg = readPkg();
+checkForUpdates(pkg);
 
 function printBanner(): void {
   console.log();
@@ -36,7 +40,7 @@ const program = new Command();
 program
   .name("git-helper")
   .description("AI-powered git workflow CLI")
-  .version("2.0.0")
+  .version(pkg.version)
   .addHelpText("beforeAll", "\n  ◆  git-helper  —  AI-powered git workflow\n")
   .hook("preAction", () => {
     assertGit();
