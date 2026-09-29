@@ -63,13 +63,22 @@ export async function generateCommitMessage(
     });
 
     const raw = response.choices[0]?.message?.content ?? "";
-    return raw
-      .replace(/\0/g, "")
-      .trim()
-      .replace(/^["']|["']$/g, "");
+    return sanitizeCommitMessage(raw);
   } catch (err) {
     throw err;
   }
+}
+
+// Strips characters that break `git commit` (null bytes, other control chars)
+// and wrapping the LLM sometimes adds despite the prompt (code fences, quotes).
+export function sanitizeCommitMessage(raw: string): string {
+  return raw
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\x00-\x08\x0B-\x1F\x7F]/g, "")
+    .replace(/^```[^\n]*\n?|\n?```$/g, "")
+    .trim()
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .trim();
 }
 
 export const STATUS_ICON: Record<FileStatus, string> = {
