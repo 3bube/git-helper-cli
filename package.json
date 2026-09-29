@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "git-helper-cli",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/3bube/git-helper-cli"
